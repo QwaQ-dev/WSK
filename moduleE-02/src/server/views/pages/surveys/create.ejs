@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Hub</title>
+
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+</head>
+
+<body>
+
+    <%- include('../../layouts/header.ejs') -%>
+
+    <div class="container-sm ">
+        <div class="border rounded p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    Опросы
+                </h2>
+
+                <div class="d-flex gap-2">
+                    <button id="addQuestionBtn" class="btn btn-outline-dark">
+                        Добавить вопрос к опросу
+                    </button>
+                    <a href="/admin/surveys" class="btn btn-outline-dark">
+                        Назад
+                    </a>
+                </div>
+            </div>
+
+            <hr />
+
+            <% if (badRequestMessage) { %>
+                <div class="alert alert-danger" role="alert">
+                   <%= badRequestMessage -%>
+                </div>
+            <% } %>
+
+            <% if (successMessage) { %>
+                <div class="alert alert-success" role="alert">
+                   <%= successMessage -%>
+                </div>
+            <% } %>
+
+            <form action="/admin/surveys/create" method="post">
+
+                <div class="mb-3">
+                    <label for="title"
+                        class="form-label">Заголовок опроса</label>
+                    <input type="text" class="form-control <%= violationError?.['title'] && 'is-invalid' -%>" id="title" placeholder="Заголовок"
+                        name="title" value="<%= cacheSurvey?.title -%>">
+
+                    <div class="invalid-feedback">
+                        <%=  violationError?.['title'] && 'is-invalid' -%>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="title"
+                        class="form-label">Описание опроса</label>
+                    <input type="text" class="form-control <%= violationError?.['description'] && 'is-invalid' -%>" id="title" placeholder="Описание"
+                        name="description" value="<%= cacheSurvey?.description -%>">
+
+                    <div class="invalid-feedback">
+                        <%=  violationError?.['description'] && 'is-invalid' -%>
+                    </div>
+                </div>
+
+                <label>
+                    Выберите категории:
+                </label>
+                <select name="categoryId" class="form-select form-select-lg mb-3" aria-label="Large select example">
+                    <% categories.forEach(category => { %>
+                        <option value="<%= category.id -%>" <%= category.id === cacheSurvey?.categoryId && 'selected' -%>>
+                            <%= category.name -%>
+                        </option>
+                    <% }) %>
+                  </select>
+
+                <div class="row" id="questions">
+                    <% cacheSurvey?.questions.forEach((question, questionIndex) => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <label for="question<%= questionIndex -%>"
+                                        class="form-label">Вопрос <%= questionIndex + 1 -%></label>
+                                    <input type="text" class="form-control <%= violationError?.[`questions[${questionIndex}]`] && 'is-invalid' -%>" id="question<%= questionIndex -%>" placeholder="Вопрос"
+                                        name="questions" value="<%= question -%>">
+                
+                                    <div class="invalid-feedback">
+                                        <%= violationError?.[`questions[${questionIndex}]`] -%>
+                                    </div>
+                                </div>
+    
+                                <div class="card-body">
+                                    <div class="row">
+                                        <% cacheSurvey?.[`answers-${questionIndex}`].forEach((answer, answerIndex) => { %>
+                                            <div class="col-mb-6 mb-3">
+                                                <label for="question<%= questionIndex -%>-<%= answerIndex -%>"
+                                                    class="form-label">Ответ <%= answerIndex + 1 -%></label>
+                                                <input type="text" class="form-control <%= violationError?.[`answers-${questionIndex}-${answerIndex}`] && 'is-invalid' -%>" id="question<%= questionIndex -%>-<%= answerIndex -%>" placeholder="Ответ"
+                                                    name="answers-<%= questionIndex -%>" value="<%= answer -%>">
+                            
+                                                <div class="invalid-feedback">
+                                                    <%= violationError?.[`answers-${questionIndex}-${answerIndex}`] -%>
+                                                </div>
+                                            </div>
+                                        <% }) %>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer">
+                                    <div class="d-flex gap-2">
+                                        <input type="radio" class="btn-check" name="type-<%= questionIndex -%>" id="option<%= questionIndex -%>" autocomplete="off" checked value="one">
+                                        <label class="btn btn-outline-dark w-100" for="option<%= questionIndex -%>">Одиночный</label>
+
+                                        <input type="radio" class="btn-check" name="type-<%= questionIndex -%>" id="option<%= questionIndex -%>k" autocomplete="off" value="many">
+                                        <label class="btn btn-outline-dark w-100" for="option<%= questionIndex -%>k">Множественный</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <button type="submit" class="btn btn-outline-success w-100">
+                    Создать опрос
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+    
+    <%- '<script>' %>
+        let violationError = <%= JSON.stringify(violationError || {}) -%>
+    <%- '</script>' %>
+
+    <%- '<script>' %>
+        let questionLength = <%= JSON.stringify(cacheSurvey?.questions.length) -%>
+    <%- '</script>' %>
+
+    <script>
+        const addQuestionBtn = document.querySelector('#addQuestionBtn');
+
+        let questionIndex = questionLength - 1;
+
+        addQuestionBtn.addEventListener('click', function (event) {
+            const questionsContainer = document.querySelector('#questions');
+
+            questionIndex++;
+
+            questionsContainer.insertAdjacentHTML('beforeend', `
+            <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <label for="question${questionIndex + 1}"
+                                        class="form-label">Вопрос ${questionIndex}</label>
+                                    <input type="text" class="form-control ${violationError?.[`questions[${questionIndex}]`] && 'is-invalid'}" id="question${questionIndex}" placeholder="Вопрос"
+                                        name="questions">
+                
+                                    <div class="invalid-feedback">
+                                        ${violationError?.[`questions[${questionIndex}]`]}
+                                    </div>
+                                </div>
+    
+                                <div class="card-body">
+                                    <div class="row">
+                                       <div class="col-mb-6 mb-3">
+                                                <label for="question${questionIndex}-${0}"
+                                                    class="form-label">Ответ ${1}</label>
+                                                <input type="text" class="form-control ${violationError?.[`answers-${questionIndex}-${0}`] && 'is-invalid'}" id="question${questionIndex}-${0}" placeholder="Ответ"
+                                                    name="answers-${questionIndex}">
+                            
+                                                <div class="invalid-feedback">
+                                                    ${violationError?.[`answers-${questionIndex}-${0}`]}
+                                                </div>
+                                            </div>
+
+                                             <div class="col-mb-6 mb-3">
+                                                <label for="question${questionIndex}-${1}"
+                                                    class="form-label">Ответ ${2}</label>
+                                                <input type="text" class="form-control ${violationError?.[`answers-${questionIndex}-${1}`] && 'is-invalid'}" id="question${questionIndex}-${1}" placeholder="Ответ"
+                                                    name="answers-${questionIndex}">
+                            
+                                                <div class="invalid-feedback">
+                                                    ${violationError?.[`answers-${questionIndex}-${1}`]}
+                                                </div>
+                                            </div>
+
+                                             <div class="col-mb-6 mb-3">
+                                                <label for="question${questionIndex}-${2}"
+                                                    class="form-label">Ответ ${3}</label>
+                                                <input type="text" class="form-control ${violationError?.[`answers-${questionIndex}-${2}`] && 'is-invalid'}" id="question${questionIndex}-${2}" placeholder="Ответ"
+                                                    name="answers-${questionIndex}">
+                            
+                                                <div class="invalid-feedback">
+                                                    ${violationError?.[`answers-${questionIndex}-${2}`]}
+                                                </div>
+                                            </div>
+
+                                             <div class="col-mb-6 mb-3">
+                                                <label for="question${questionIndex}-${3}"
+                                                    class="form-label">Ответ ${4}</label>
+                                                <input type="text" class="form-control ${violationError?.[`answers-${questionIndex}-${3}`] && 'is-invalid'}" id="question${questionIndex}-${3}" placeholder="Ответ"
+                                                    name="answers-${questionIndex}">
+                            
+                                                <div class="invalid-feedback">
+                                                    ${violationError?.[`answers-${questionIndex}-${3}`]}
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer">
+                                    <div class="d-flex gap-2">
+                                        <input type="radio" class="btn-check" name="type-${questionIndex}" id="option${questionIndex}" autocomplete="off" checked value="one">
+                                        <label class="btn btn-outline-dark w-100" for="option${questionIndex}">Одиночный</label>
+
+                                        <input type="radio" class="btn-check" name="type-${questionIndex}" id="option${questionIndex}k" autocomplete="off" value="many">
+                                        <label class="btn btn-outline-dark w-100" for="option${questionIndex}k">Множественный</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+            `)
+        })
+    </script>
+</body>
+
+</html>

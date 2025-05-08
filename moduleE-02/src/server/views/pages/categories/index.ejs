@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Hub</title>
+
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+</head>
+
+<body>
+
+    <%- include('../../layouts/header.ejs') -%>
+
+    <div class="container-sm ">
+        <div class="border rounded p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    Категория: <%= category.name -%>
+                </h2>
+
+                <div class="d-flex gap-2">
+                    <a href="/admin/categories" class="btn btn-outline-dark">
+                        Назад к категориям
+                    </a>
+                </div>
+            </div>
+
+            <hr />
+
+            <% if (badRequestMessage) { %>
+                <div class="alert alert-danger" role="alert">
+                   <%= badRequestMessage -%>
+                </div>
+            <% } %>
+
+            <% if (successMessage) { %>
+                <div class="alert alert-success" role="alert">
+                   <%= successMessage -%>
+                </div>
+            <% } %>
+
+            <form action="/admin/categories/create" method="post">
+                <div class="mb-3">
+                    <label for="name"
+                        class="form-label">Заголовок</label>
+                    <input type="text" class="form-control <%= violationError?.['name'] && 'is-invalid' -%>" id="name" placeholder="Education"
+                        name="name" value="<%= category.name -%>">
+
+                    <div class="invalid-feedback">
+                        <%= violationError?.['name'] -%>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-outline-success w-100">
+                    Редактировать
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Hub</title>
+
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+</head>
+
+<body>
+
+    <%- include('../../layouts/header.ejs') -%>
+
+    <div class="container-sm ">
+        <div class="border rounded p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    Удаленные опросы
+                </h2>
+
+                <div class="d-flex gap-2">
+                    <a href="/admin/surveys" class="btn btn-outline-dark">
+                        Назад
+                    </a>
+                </div>
+            </div>
+
+            <hr />
+
+            <% if (badRequestMessage) { %>
+                <div class="alert alert-danger" role="alert">
+                   <%= badRequestMessage -%>
+                </div>
+            <% } %>
+
+            <% if (successMessage) { %>
+                <div class="alert alert-success" role="alert">
+                   <%= successMessage -%>
+                </div>
+            <% } %>
+
+            <div class="row">
+                <% surveys.map(survey => { %>
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                Категория: <%= survey.categoryName -%>
+                            </div>
+
+                            <div class="card-body">
+                                <%= survey.title -%>
+
+                                <br />
+
+                                <%= survey.description -%>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+
+            <% if (surveys.length < 1) { %>
+                <div class="text-center text-danger fs-2 mt-2">
+                    НЕ НАЙДЕНО
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>
